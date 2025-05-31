@@ -145,7 +145,7 @@ public final class TerminalRenderer {
                         float left = column * mFontWidth;
                         float top = heightOffset - mFontLineSpacing;
                         RectF r = new RectF(left, top, left + mFontWidth, top + mFontLineSpacing);
-                        canvas.drawBitmap(mEmulator.getScreen().getSixelBitmap(codePoint, style), mEmulator.getScreen().getSixelRect(codePoint, style), r, null);
+                        canvas.drawBitmap(bm, mEmulator.getScreen().getSixelRect(codePoint, style), r, null);
                     }
                     column += 1;
                     measuredWidthForRun = 0.f;
