@@ -34,14 +34,14 @@ https://github.com/Termux-Monet/termux-monet/releases/latest
   -->
 
 |`𝚜𝚑𝚒𝚗𝚎`|
-|:----------:|
-|[![termux-shine-01](https://github.com/user-attachments/assets/7abce288-ec7b-497e-ac44-7debcf43c535)](#---)|
-|[![termux-shine-02](https://github.com/user-attachments/assets/81d9c91d-7d4b-4a43-8a40-861a6bb30941)](#---)|
+|:-----:|
+|[![shine01](https://github.com/user-attachments/assets/226617cc-6bb0-4c28-a01b-cb0e51f09716)](#---)|
+|[![shine02](https://github.com/user-attachments/assets/7402b763-a58b-4f9d-b1a9-51b39e540643)](#---)|
 
 |`𝚛𝚎𝚖𝚒𝚡`|
-|:----------:|
-|[![termux-remix-01](https://github.com/user-attachments/assets/723d6875-19e5-43dd-b86f-b403213505fa)](#---)|
-|[![termux-remix-02](https://github.com/user-attachments/assets/08394937-702a-45a1-8117-fe64110cbf0c)](#---)|
+|:-----:|
+|[![remix01](https://github.com/user-attachments/assets/fe11cba6-b097-4141-98c8-ae11eebe15a6)](#---)|
+|[![remix02](https://github.com/user-attachments/assets/c289d019-8d8c-4d7e-8c13-4411132cb015)](#---)|
 
 </p>
 
