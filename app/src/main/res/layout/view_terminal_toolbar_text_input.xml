@@ -9,6 +9,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+        android:id="@+id/terminal_toolbar_text_input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:importantForAutofill="no"

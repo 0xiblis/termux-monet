@@ -99,6 +99,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.WindowInsetsAnimationCompat;
 import androidx.core.view.WindowInsetsAnimationCompat.Callback;
 import androidx.core.view.WindowInsetsAnimationCompat.BoundsCompat;
@@ -107,6 +108,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -348,8 +350,21 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
     }
 
     private void configureDrawerLayout() {
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-        drawerLayout.setScrimColor(getColor(R.color.drawer_scrim_color));
+        getDrawer().setScrimColor(getColor(R.color.drawer_scrim_color));
+        getDrawer().addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                if (mTermuxSessionListViewController != null) {
+                    mTermuxSessionListViewController.notifyDataSetChanged();
+                }
+            }
+            @Override
+                public void onDrawerClosed(@NonNull View drawerView) {}
+            @Override
+                public void onDrawerStateChanged(int newState) {}
+        });
         LinearLayout headerLayout = findViewById(R.id.drawer_header);
         headerLayout.setOnClickListener(v -> {
             getDrawer().closeDrawers();
@@ -358,12 +373,12 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         });
         headerLayout.setOnLongClickListener(view -> {
             String url = getString(R.string.developer_github);
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url)); 
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
             return true;
         });
         MaterialButton changeBackgroundButton = findViewById(R.id.change_background_button);
-        changeBackgroundButton.setTypeface(null, Typeface.NORMAL);
+        changeBackgroundButton.setTypeface(getResources().getFont(R.font.font_regular), Typeface.NORMAL);
         changeBackgroundButton.setOnClickListener(view -> {
             getDrawer().closeDrawers();
             mTermuxBackgroundManager.setBackgroundImage();
@@ -1069,87 +1084,94 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         popupWindow.setFocusable(true);
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
+        Typeface customFont = ResourcesCompat.getFont(this, R.font.font_regular);
+        View.OnClickListener dismissOnClick = v -> popupWindow.dismiss();
+        Consumer<MaterialButton> styleButton = button -> {
+            button.setTypeface(customFont, Typeface.NORMAL);
+            button.setAllCaps(false);
+        };
+
         MaterialButton selectUrlBtn = popupView.findViewById(R.id.select_url);
-        selectUrlBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(selectUrlBtn);
         selectUrlBtn.setOnClickListener(v -> {
             mTermuxTerminalViewClient.showUrlSelection();
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton shareTranscriptBtn = popupView.findViewById(R.id.share_transcript);
-        shareTranscriptBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(shareTranscriptBtn);
         shareTranscriptBtn.setOnClickListener(v -> {
             mTermuxTerminalViewClient.shareSessionTranscript();
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton shareSelected = popupView.findViewById(R.id.share_selected_text);
-        shareSelected.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(shareSelected);
         if (hasSelectedText) {
             shareSelected.setVisibility(View.VISIBLE);
             shareSelected.setOnClickListener(v -> {
                 mTermuxTerminalViewClient.shareSelectedText();
-                popupWindow.dismiss();
+                dismissOnClick.onClick(v);
             });
         }
 
         MaterialButton autofillUsername = popupView.findViewById(R.id.autofill_username);
         MaterialButton autofillPassword = popupView.findViewById(R.id.autofill_password);
-        autofillUsername.setTypeface(null, Typeface.NORMAL);
-        autofillPassword.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(autofillUsername);
+        styleButton.accept(autofillPassword);
         if (autoFillEnabled) {
             autofillUsername.setVisibility(View.VISIBLE);
             autofillUsername.setOnClickListener(v -> {
                 mTerminalView.requestAutoFillUsername();
-                popupWindow.dismiss();
+                dismissOnClick.onClick(v);
             });
 
             autofillPassword.setVisibility(View.VISIBLE);
             autofillPassword.setOnClickListener(v -> {
                 mTerminalView.requestAutoFillPassword();
-                popupWindow.dismiss();
+                dismissOnClick.onClick(v);
             });
         }
 
         MaterialButton resetBtn = popupView.findViewById(R.id.reset_terminal);
-        resetBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(resetBtn);
         resetBtn.setOnClickListener(v -> {
             onResetTerminalSession(session);
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton killProcessBtn = popupView.findViewById(R.id.kill_process);
-        killProcessBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(killProcessBtn);
         killProcessBtn.setText(getString(R.string.action_kill_process, session.getPid()));
         killProcessBtn.setEnabled(session.isRunning());
         killProcessBtn.setOnClickListener(v -> {
             showKillSessionDialog(session);
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton fontColorBtn = popupView.findViewById(R.id.font_color);
-        fontColorBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(fontColorBtn);
         fontColorBtn.setOnClickListener(v -> {
             showFontAndColorDialog();
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton setBgImageBtn = popupView.findViewById(R.id.set_background_image);
-        setBgImageBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(setBgImageBtn);
         setBgImageBtn.setOnClickListener(v -> {
             mTermuxBackgroundManager.setBackgroundImage();
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton removeBgImageBtn = popupView.findViewById(R.id.remove_background_image);
-        removeBgImageBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(removeBgImageBtn);
         removeBgImageBtn.setOnClickListener(v -> {
             mTermuxBackgroundManager.removeBackgroundImage(true);
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         SwitchMaterial keepScreenSwitch = popupView.findViewById(R.id.keep_screen_on);
-        keepScreenSwitch.setTypeface(keepScreenSwitch.getTypeface(), Typeface.NORMAL);
+        keepScreenSwitch.setTypeface(customFont, Typeface.NORMAL);
         keepScreenSwitch.setTextColor(getColor(R.color.general_dialog_text_03));
         keepScreenSwitch.setChecked(mPreferences.shouldKeepScreenOn());
         keepScreenSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> toggleKeepScreenOn());
@@ -1165,35 +1187,32 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
             new int[] { android.R.attr.state_checked },
             new int[] { -android.R.attr.state_checked }
         };
-        ColorStateList thumbColorStateList = new ColorStateList(states, thumbColors);
-        keepScreenSwitch.setThumbTintList(thumbColorStateList);
-        ColorStateList trackColorStateList = new ColorStateList(states, trackColors);
-        keepScreenSwitch.setTrackTintList(trackColorStateList);
+        keepScreenSwitch.setThumbTintList(new ColorStateList(states, thumbColors));
+        keepScreenSwitch.setTrackTintList(new ColorStateList(states, trackColors));
 
         MaterialButton helpBtn = popupView.findViewById(R.id.help);
-        helpBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(helpBtn);
         helpBtn.setOnClickListener(v -> {
             ActivityUtils.startActivity(this, new Intent(this, HelpActivity.class));
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton settingsBtn = popupView.findViewById(R.id.settings);
-        settingsBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(settingsBtn);
         settingsBtn.setOnClickListener(v -> {
             ActivityUtils.startActivity(this, new Intent(this, SettingsActivity.class));
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         MaterialButton reportBtn = popupView.findViewById(R.id.report);
-        reportBtn.setTypeface(null, Typeface.NORMAL);
+        styleButton.accept(reportBtn);
         reportBtn.setOnClickListener(v -> {
             mTermuxTerminalViewClient.reportIssueFromTranscript();
-            popupWindow.dismiss();
+            dismissOnClick.onClick(v);
         });
 
         popupWindow.showAtLocation(anchorView, Gravity.CENTER, 0, 0);
     }
-
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {

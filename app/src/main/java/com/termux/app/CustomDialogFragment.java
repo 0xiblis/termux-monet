@@ -19,11 +19,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.termux.R;
 
 import java.nio.charset.StandardCharsets;
@@ -43,6 +45,11 @@ public class CustomDialogFragment extends DialogFragment {
                 return insets;
             });
         }
+
+        TextInputLayout textInputLayout = view.findViewById(R.id.textInputLayout);
+        Typeface customFontForHint = ResourcesCompat.getFont(getContext(), R.font.font_regular);
+        textInputLayout.setTypeface(customFontForHint);
+        textInputLayout.getEditText().setTypeface(customFontForHint, Typeface.BOLD);
 
         TextInputEditText editText = view.findViewById(R.id.editText);
         editText.setTypeface(null, Typeface.BOLD);

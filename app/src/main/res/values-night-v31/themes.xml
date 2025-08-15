@@ -10,6 +10,8 @@
 
     <!-- TermuxApp DayNight DarkActionBar theme. -->
     <style name="Theme.TermuxApp.DayNight.DarkActionBar" parent="Theme.Material3.DynamicColors.DayNight">
+        <item name="fontFamily">@font/custom_font</item>
+        <item name="android:fontFamily">@font/custom_font</item>
         <item name="android:navigationBarColor">@color/background_accent</item>
         <item name="android:enforceNavigationBarContrast">false</item>
     </style>

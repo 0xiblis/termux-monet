@@ -278,6 +278,8 @@ public final class ExtraKeysView extends GridLayout {
 
     protected boolean mAccessibilityEnabled;
 
+    private Typeface customTypeface;
+
     public ExtraKeysView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setRepetitiveKeys(ExtraKeysConstants.PRIMARY_REPETITIVE_KEYS);
@@ -289,6 +291,10 @@ public final class ExtraKeysView extends GridLayout {
 
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mAccessibilityEnabled = am.isEnabled();
+    }
+
+    public void setCustomFont(Typeface typeface) {
+        this.customTypeface = typeface;
     }
 
     /**
@@ -584,7 +590,9 @@ public final class ExtraKeysView extends GridLayout {
                 button.setText(buttonInfo.getDisplay());
                 button.setTextColor(mButtonTextColor);
                 button.setAllCaps(mButtonTextAllCaps);
-                button.setTypeface(null, Typeface.NORMAL);
+                if (customTypeface != null) {
+                    button.setTypeface(customTypeface, Typeface.NORMAL);
+                }
                 button.setPadding(0, 0, 0, 0);
                 button.setOnClickListener(view -> {
                     performExtraKeyButtonHapticFeedback(view, buttonInfo, button);
@@ -783,7 +791,9 @@ public final class ExtraKeysView extends GridLayout {
         }
         button.setText(extraButton.getDisplay());
         button.setAllCaps(mButtonTextAllCaps);
-        button.setTypeface(null, Typeface.NORMAL);
+        if (customTypeface != null) {
+            button.setTypeface(customTypeface, Typeface.NORMAL);
+        }
         button.setPadding(0, 0, 0, 0);
         button.setMinHeight(0);
         button.setMinWidth(0);
