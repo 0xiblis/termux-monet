@@ -17,18 +17,18 @@
     <color name="icon_neutral_accent_bg">@android:color/system_neutral1_100</color>
 
     <!-- general -->
-    <color name="general_dialog_background">#ab000000</color>
-    <color name="general_dialog_divider">#ff333333</color>
-    <color name="general_dialog_hint">#ff4e4e4e</color>
+    <item name="general_dialog_background_alias" type="color">@color/general_dialog_background</item>
+    <item name="general_dialog_divider_alias" type="color">@color/general_dialog_divider</item>
+    <item name="general_dialog_hint_alias" type="color">@color/general_dialog_hint</item>
 
-    <color name="general_dialog_border_01">#80101010</color>
-    <color name="general_dialog_border_02">#80101010</color>
-    <color name="general_dialog_border_03">#80101010</color>
+    <item name="general_dialog_border_01_alias" type="color">@color/general_dialog_border_01</item>
+    <item name="general_dialog_border_02_alias" type="color">@color/general_dialog_border_02</item>
+    <item name="general_dialog_border_03_alias" type="color">@color/general_dialog_border_03</item>
 
-    <color name="general_dialog_text_01">#ffcccccc</color>
-    <color name="general_dialog_text_02">#ffcccccc</color>
-    <color name="general_dialog_text_03">#ffcccccc</color>
-    <color name="general_dialog_text_04">#ff666666</color>
-    <color name="general_dialog_text_05">#ff9c9c9c</color>
+    <item name="general_dialog_text_01_alias" type="color">@color/general_dialog_text_01</item>
+    <item name="general_dialog_text_02_alias" type="color">@color/general_dialog_text_02</item>
+    <item name="general_dialog_text_03_alias" type="color">@color/general_dialog_text_03</item>
+    <item name="general_dialog_text_04_alias" type="color">@color/general_dialog_text_04</item>
+    <item name="general_dialog_text_05_alias" type="color">@color/general_dialog_text_05</item>
 
 </resources>

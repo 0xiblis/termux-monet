@@ -123,7 +123,7 @@ public final class TextInputDialogUtils {
 
             TextView titleView = new TextView(context);
             titleView.setText(titleText);
-            titleView.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_05));
+            titleView.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_05_alias));
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
             //titleView.setTypeface(null, Typeface.BOLD);
             titleView.setPadding(30, 20, 30, 20);
@@ -132,7 +132,7 @@ public final class TextInputDialogUtils {
                     ViewGroup.LayoutParams.WRAP_CONTENT
             ));
             GradientDrawable background = new GradientDrawable();
-            background.setColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_background));
+            background.setColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_background_alias));
             background.setCornerRadius(10 * dip);
             titleView.setBackground(background);
 
@@ -143,7 +143,7 @@ public final class TextInputDialogUtils {
             );
             dividerParams.setMargins(0, Math.round(12 * dip), 0, Math.round(10 * dip));
             divider.setLayoutParams(dividerParams);
-            divider.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_divider));
+            divider.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_divider_alias));
 
             TextInputLayout inputLayout = new TextInputLayout(context);
             inputLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
@@ -152,11 +152,11 @@ public final class TextInputDialogUtils {
             inputLayout.setBoxStrokeColor(Color.TRANSPARENT);
             inputLayout.setBoxStrokeWidth(0);
             inputLayout.setBoxStrokeWidthFocused(0);
-            inputLayout.setHintTextColor(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.general_dialog_hint)));
-            inputLayout.setDefaultHintTextColor(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.general_dialog_hint)));
+            inputLayout.setHintTextColor(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.general_dialog_hint_alias)));
+            inputLayout.setDefaultHintTextColor(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.general_dialog_hint_alias)));
             Drawable icon = ContextCompat.getDrawable(context, R.drawable.ic_lead_pencil);
             inputLayout.setStartIconDrawable(icon);
-            inputLayout.setStartIconTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_01)));
+            inputLayout.setStartIconTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_01_alias)));
             inputLayout.setStartIconMinSize((int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 38, context.getResources().getDisplayMetrics()));
 
@@ -164,7 +164,7 @@ public final class TextInputDialogUtils {
             editText.setSingleLine();
             editText.setBackground(null);
             //editText.setTypeface(null, Typeface.NORMAL);
-            editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_03));
+            editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_03_alias));
 
             if (initialText != null) {
                 editText.setText(initialText);
@@ -229,13 +229,13 @@ public final class TextInputDialogUtils {
                     layout.requestApplyInsets();
                 }
                 Button positiveButton = ((androidx.appcompat.app.AlertDialog) dialog).getButton(DialogInterface.BUTTON_POSITIVE);
-                positiveButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_02));
+                positiveButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_02_alias));
                 //positiveButton.setTypeface(null, Typeface.NORMAL);
                 Button negativeButton = ((androidx.appcompat.app.AlertDialog) dialog).getButton(DialogInterface.BUTTON_NEGATIVE);
-                negativeButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_04));
+                negativeButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_04_alias));
                 //negativeButton.setTypeface(null, Typeface.NORMAL);
                 Button neutralButton = ((androidx.appcompat.app.AlertDialog) dialog).getButton(DialogInterface.BUTTON_NEUTRAL);
-                neutralButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_04));
+                neutralButton.setTextColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_text_04_alias));
                 //neutralButton.setTypeface(null, Typeface.NORMAL);
 
                 if (customTypeface != null) {
@@ -256,14 +256,14 @@ public final class TextInputDialogUtils {
             if (dialog != null && dialog.getWindow() != null) {
                 //dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 /*GradientDrawable background = new GradientDrawable();
-                background.setColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_background));
+                background.setColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_background_alias));
                 background.setCornerRadius(38f);
                 background.setStroke(6, 0x80afff00);
                 dialog.getWindow().setBackgroundDrawable(background);*/
                 int[] gradientColors = new int[] {
-                    ContextCompat.getColor(requireContext(), R.color.general_dialog_border_01),
-                    ContextCompat.getColor(requireContext(), R.color.general_dialog_border_02),
-                    ContextCompat.getColor(requireContext(), R.color.general_dialog_border_03)
+                    ContextCompat.getColor(requireContext(), R.color.general_dialog_border_01_alias),
+                    ContextCompat.getColor(requireContext(), R.color.general_dialog_border_02_alias),
+                    ContextCompat.getColor(requireContext(), R.color.general_dialog_border_03_alias)
                 };
                 GradientDrawable border = new GradientDrawable(
                     GradientDrawable.Orientation.LEFT_RIGHT,
@@ -271,7 +271,7 @@ public final class TextInputDialogUtils {
                 );
                 border.setCornerRadius(30f);
                 GradientDrawable background = new GradientDrawable();
-                background.setColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_background));
+                background.setColor(ContextCompat.getColor(requireContext(), R.color.general_dialog_background_alias));
                 background.setCornerRadius(26f);
                 Drawable[] layers = new Drawable[] { border, background };
                 LayerDrawable layerDrawable = new LayerDrawable(layers);

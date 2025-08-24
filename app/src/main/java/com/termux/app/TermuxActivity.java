@@ -1,7 +1,6 @@
 package com.termux.app;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -29,7 +28,6 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.EditText;
-//import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -89,8 +87,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.LinearGradient;
 import android.graphics.Shader;
 import android.graphics.Typeface;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.ViewTreeObserver;
 import android.view.Window;
@@ -114,6 +111,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.termux.app.CustomDialogFragment;
 
@@ -303,13 +301,7 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
             mNavBarHeight = insetsCompat.getInsets(Type.systemBars()).bottom;
             return insetsCompat.toWindowInsets();
         });
-        if (mProperties.isUsingFullScreen()) {
-            WindowInsetsController insetsController = getWindow().getInsetsController();
-            if (insetsController != null) {
-                insetsController.hide(WindowInsets.Type.statusBars());
-                insetsController.hide(WindowInsets.Type.navigationBars());
-            }
-        }
+        setFullscreenMode();
         // Must be done every time activity is created in order to registerForActivityResult,
         // Even if the logic of launching is based on user input.
         setBackgroundManager();
@@ -345,8 +337,51 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         verifyRWPermission();
         verifyAndroid11ManageFiles();
         configureDrawerLayout();
-        configureNavigationBar();
         configureSmoothKeyboard();
+    }
+
+    private void setFullscreenMode() {
+        if (mProperties.isUsingFullScreen()) {
+            Window window = getWindow();
+            View decorView = window.getDecorView();
+            window.setFlags(
+                    WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS |
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
+                    0
+            );
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController insetsController = window.getInsetsController();
+                if (insetsController != null) {
+                    insetsController.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                    insetsController.setSystemBarsBehavior(
+                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    );
+                }
+            } else {
+                decorView.setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                );
+            }
+        } else {
+            Window window = getWindow();
+            View decorView = window.getDecorView();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController insetsController = window.getInsetsController();
+                if (insetsController != null) {
+                    insetsController.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+                }
+            } else {
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
     }
 
     private void configureDrawerLayout() {
@@ -367,7 +402,8 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         });
 
         LinearLayout headerLayout = findViewById(R.id.drawer_header);
-        headerLayout.setOnClickListener(v -> {
+        headerLayout.setOnClickListener(view -> {
+            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
             getDrawer().closeDrawers();
             CustomDialogFragment dialog = new CustomDialogFragment();
             dialog.show(getSupportFragmentManager(), "customDialog");
@@ -382,6 +418,7 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         MaterialButton changeBackgroundButton = findViewById(R.id.change_background_button);
         changeBackgroundButton.setTypeface(getResources().getFont(R.font.font_regular), Typeface.NORMAL);
         changeBackgroundButton.setOnClickListener(view -> {
+            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
             getDrawer().closeDrawers();
             mTermuxBackgroundManager.setBackgroundImage();
         });
@@ -398,17 +435,6 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
 
         Typeface font = ResourcesCompat.getFont(this, R.font.font_regular);
         TextInputDialogUtils.setCustomFont(font);
-    }
-
-    private void configureNavigationBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-            window.getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            );
-            window.setNavigationBarColor(getColor(R.color.general_navigation_bar));
-        }
     }
 
     private void configureSmoothKeyboard() {
@@ -513,7 +539,7 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         layoutParams.gravity = Gravity.TOP;
         overlay.setLayoutParams(layoutParams);
         decorView.addView(overlay, 0);
-        // Detectar cambios de altura si el status bar varía
+
         decorView.getViewTreeObserver().addOnGlobalLayoutListener(
             new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -527,6 +553,12 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
                 }
             }
         );
+
+        ViewCompat.setOnApplyWindowInsetsListener(decorView, (v, insets) -> {
+            boolean isStatusBarVisible = insets.isVisible(WindowInsetsCompat.Type.statusBars());
+            overlay.setVisibility(isStatusBarVisible ? View.VISIBLE : View.GONE);
+            return ViewCompat.onApplyWindowInsets(v, insets);
+        });
     }
 
     private int getStatusBarHeight() {
@@ -557,19 +589,6 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         }
     }
 
-    private void triggerVibration() {
-        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        if (vibrator == null) return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            VibrationEffect effect = VibrationEffect.createOneShot(
-                50, VibrationEffect.DEFAULT_AMPLITUDE
-            );
-            vibrator.vibrate(effect);
-        } else {
-            vibrator.vibrate(50);
-        }
-    }
-
     private void verifyRWPermission() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = new String[] { android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE };
@@ -588,7 +607,7 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
     private Map<String, int[]> readColorsFromPropertiesFile(String filePath) {
         Properties properties = new Properties();
         Map<String, int[]> colors = new HashMap<>();
-        int defaultColor = getColor(R.color.general_default_extrakeys_background);
+        int defaultColor = getColor(R.color.general_default_systembars_background);
         int defaultAccent = getColor(R.color.background_accent);
         try (BufferedReader reader = new BufferedReader(new FileReader(new File(filePath)))) {
             properties.load(reader);
@@ -597,7 +616,8 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         }
         putSafeColor(properties, colors, "extra-keys-background", defaultAccent);
         putSafeColor(properties, colors, "sessions-background", defaultAccent);
-        putSafeColor(properties, colors, "status-bar-background", defaultColor);
+        putSafeColor(properties, colors, "statusbar-background", defaultColor);
+        putSafeColor(properties, colors, "navigationbar-background", defaultColor);
         return colors;
     }
 
@@ -629,12 +649,31 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         }
     }
 
+    private Map<String, int[]> lastColors = null;
+    private boolean lastSessionsBlurEnabled = false;
+    private boolean lastExtraKeysBlurEnabled = false;
+    private boolean lastMonetBackgroundEnabled = false;
+
     private void applyDynamicUIConfigurations() {
         String filePath = "/data/data/com.termux/files/home/.termux/termux.properties";
         Map<String, int[]> colors = readColorsFromPropertiesFile(filePath);
+
+        boolean sameColors = lastColors != null && colors.equals(lastColors);
+        boolean sameSessionBlur = (lastSessionsBlurEnabled == mPreferences.isSessionsBlurEnabled());
+        boolean sameExtraKeysBlur = (lastExtraKeysBlurEnabled == mPreferences.isExtraKeysBlurEnabled());
+        boolean sameMonet = (lastMonetBackgroundEnabled == mPreferences.isMonetBackgroundEnabled());
+        if (sameColors && sameSessionBlur && sameExtraKeysBlur && sameMonet) {
+            return;
+        }
+        lastColors = colors;
+        lastSessionsBlurEnabled = mPreferences.isSessionsBlurEnabled();
+        lastExtraKeysBlurEnabled = mPreferences.isExtraKeysBlurEnabled();
+        lastMonetBackgroundEnabled = mPreferences.isMonetBackgroundEnabled();
+
         int[] extraKeysColor = colors.get("extra-keys-background");
         int[] sessionsColor = colors.get("sessions-background");
-        int[] statusBarColor = colors.get("status-bar-background");
+        int[] statusBarColor = colors.get("statusbar-background");
+        int[] navigationBarColor = colors.get("navigationbar-background");
         configureViewVisibility(R.id.terminal_monetbackground, mPreferences.isMonetBackgroundEnabled());
         applyBlurredBackgroundConfig(
             R.id.sessions_background,
@@ -650,9 +689,11 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
             extraKeysColor,
             mPreferences.isExtraKeysBlurEnabled(),
             0.8f,
-            !mPreferences.toogleShowTerminalToolbar()
+            !mPreferences.shouldShowTerminalToolbar()
         );
         getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(navigationBarColor[0]);
+        getWindow().setNavigationBarDividerColor(Color.TRANSPARENT);
         setStatusBarBlurOverlay();
         setStatusBarBackgroundOverlay(statusBarColor);
     }
@@ -688,19 +729,23 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
     }
 
     private void setBackgroundWithCornerRadius(View view, int[] colors, float cornerRadius) {
-        if (colors == null || colors.length == 0) return;
+        if (view == null || colors == null || colors.length == 0) return;
         GradientDrawable backgroundDrawable;
-        if (colors.length == 1) {
+        if (view.getBackground() instanceof GradientDrawable) {
+            backgroundDrawable = (GradientDrawable) view.getBackground();
+        } else {
             backgroundDrawable = new GradientDrawable();
+        }
+        if (colors.length == 1) {
             backgroundDrawable.setColor(colors[0]);
         } else {
-            backgroundDrawable = new GradientDrawable(
-                    GradientDrawable.Orientation.LEFT_RIGHT,
-                    colors
-            );
+            backgroundDrawable.setColors(colors);
+            backgroundDrawable.setOrientation(GradientDrawable.Orientation.LEFT_RIGHT);
         }
         backgroundDrawable.setCornerRadius(cornerRadius);
-        view.setBackground(backgroundDrawable);
+        if (view.getBackground() != backgroundDrawable) {
+            view.setBackground(backgroundDrawable);
+        }
     }
 
     @Override
@@ -728,7 +773,6 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
             mTermuxTerminalSessionActivityClient.onResume();
         if (mTermuxTerminalViewClient != null)
             mTermuxTerminalViewClient.onResume();
-        applyDynamicUIConfigurations();
         // Check if a crash happened on last run of the app or if a plugin crashed and show a
         // notification with the crash details if it did
         TermuxCrashUtils.notifyAppCrashFromCrashLogFile(this, LOG_TAG);
@@ -933,35 +977,16 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         ViewPager terminalToolbarViewPager = getTerminalToolbarViewPager();
         if (terminalToolbarViewPager == null) return;
 
-        boolean showNow = mPreferences.toogleShowTerminalToolbar();
-        Logger.showToast(this, showNow ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar), true);
+        boolean isVisible = mPreferences.toogleShowTerminalToolbar();
+        Logger.showToast(this, isVisible ? getString(R.string.msg_enabling_terminal_toolbar) : getString(R.string.msg_disabling_terminal_toolbar), true);
 
-        updateViewVisibility(terminalToolbarViewPager, showNow);
-        updateViewVisibility(R.id.extrakeys_backgroundblur, showNow);
-        updateViewVisibility(R.id.extrakeys_background, showNow);
+        terminalToolbarViewPager.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        applyDynamicUIConfigurations();
 
-        isToolbarHidden = !showNow;
+        isToolbarHidden = !isVisible;
 
-        if (showNow && isTerminalToolbarTextInputViewSelected()) {
+        if (isVisible && isTerminalToolbarTextInputViewSelected()) {
             findViewById(R.id.terminal_toolbar_text_input).requestFocus();
-        }
-    }
-
-    private void updateViewVisibility(int viewId, boolean isVisible) {
-        View view = findViewById(viewId);
-        if (view != null) {
-            view.setVisibility(isVisible ? View.VISIBLE : View.GONE);
-
-            if (viewId == R.id.extrakeys_backgroundblur && isVisible) {
-                boolean isBlurEnabled = mPreferences.isExtraKeysBlurEnabled();
-                view.setVisibility(isBlurEnabled ? View.VISIBLE : View.GONE);
-            }
-        }
-    }
-
-    private void updateViewVisibility(View view, boolean isVisible) {
-        if (view != null) {
-            view.setVisibility(isVisible ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -979,15 +1004,26 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
     private void setSettingsButtonView() {
         View settingsButton = findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(v -> {
-            triggerVibration();
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
             ActivityUtils.startActivity(this, new Intent(this, SettingsActivity.class));
+        });
+        settingsButton.setOnLongClickListener(v -> {
+            try {
+                Intent devSettingsIntent = new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS);
+                devSettingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                                         | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+                startActivity(devSettingsIntent);
+            } catch (Exception e) {
+                showToast("No se pudo abrir ajustes de desarrollador", true);
+            }
+            return true;
         });
     }
 
     private void setNewSessionButtonView() {
         View newSessionButton = findViewById(R.id.new_session_button);
         newSessionButton.setOnClickListener(v -> {
-            triggerVibration();
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
             mTermuxTerminalSessionActivityClient.addNewSession(false, null);
         });
         newSessionButton.setOnLongClickListener(v -> {
@@ -998,7 +1034,7 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
 
     private void setToggleKeyboardView() {
         findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
-            triggerVibration();
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
             mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
             getDrawer().closeDrawers();
         });
@@ -1320,17 +1356,17 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
     }*/
 
     private void showKillSessionDialog(TerminalSession session) {
-        if (session == null)
-            return;
-        final AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setIcon(android.R.drawable.ic_dialog_alert);
-        b.setMessage(R.string.title_confirm_kill_process);
-        b.setPositiveButton(android.R.string.ok, (dialog, id) -> {
-            dialog.dismiss();
-            session.finishIfRunning();
-        });
-        b.setNegativeButton(android.R.string.cancel, null);
-        b.show();
+        if (session == null) return;
+        new MaterialAlertDialogBuilder(this)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setTitle("Advertencia")
+            .setMessage(R.string.title_confirm_kill_process)
+            .setPositiveButton(android.R.string.ok, (dialog, id) -> {
+                dialog.dismiss();
+                session.finishIfRunning();
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     private void onResetTerminalSession(TerminalSession session) {
@@ -1350,7 +1386,7 @@ public final class TermuxActivity extends BaseTermuxActivity implements ServiceC
         } catch (ActivityNotFoundException | IllegalArgumentException e) {
             // The startActivity() call is not documented to throw IllegalArgumentException.
             // However, crash reporting shows that it sometimes does, so catch it here.
-            new AlertDialog.Builder(this).setMessage(getString(R.string.error_styling_not_installed)).setPositiveButton(R.string.action_styling_install, (dialog, which) -> ActivityUtils.startActivity(this, new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL)))).setNegativeButton(android.R.string.cancel, null).show();
+            new MaterialAlertDialogBuilder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Advertencia").setMessage(getString(R.string.error_styling_not_installed)).setPositiveButton(R.string.action_styling_install, (dialog, which) -> ActivityUtils.startActivity(this, new Intent(Intent.ACTION_VIEW, Uri.parse(TermuxConstants.TERMUX_STYLING_FDROID_PACKAGE_URL)))).setNegativeButton(android.R.string.cancel, null).show();
         }
     }
 

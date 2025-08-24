@@ -123,12 +123,12 @@
 
                         <ImageView
                             android:id="@+id/toggle_keyboard_button"
-                            android:layout_width="25dp"
-                            android:layout_height="25dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:layout_marginTop="10dp"
                             android:layout_marginBottom="10dp"
                             android:layout_marginHorizontal="16dp"
-                            app:srcCompat="@drawable/ic_keyboard"
+                            app:srcCompat="@drawable/ic_keyboard2"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             app:tint="#454545"
                             android:contentDescription="@string/action_toggle_soft_keyboard"/>
@@ -147,12 +147,12 @@
 
                         <ImageView
                             android:id="@+id/settings_button"
-                            android:layout_width="25dp"
-                            android:layout_height="25dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
                             android:layout_marginTop="10dp"
                             android:layout_marginBottom="10dp"
                             android:layout_marginHorizontal="16dp"
-                            app:srcCompat="@drawable/ic_settings"
+                            app:srcCompat="@drawable/ic_settings2"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             app:tint="#454545"
                             android:contentDescription="@string/action_open_settings"/>

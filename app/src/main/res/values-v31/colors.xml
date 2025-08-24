@@ -45,7 +45,7 @@
     <color name="drawer_degrade_name_03">#323232</color>
 
     <!-- general -->
-    <color name="general_default_extrakeys_background">#60000000</color>
+    <color name="general_default_systembars_background">#60000000</color>
 
     <color name="general_dialog_background">#ab000000</color>
     <color name="general_dialog_divider">#ff333333</color>
@@ -65,7 +65,5 @@
     <color name="general_appbar_title">#ffbababa</color>
     <color name="general_appbar_subtitle">#ff404040</color>
     <color name="general_appbar_icon">#ff505050</color>
-
-    <color name="general_navigation_bar">#aa000000</color>
 
 </resources>
