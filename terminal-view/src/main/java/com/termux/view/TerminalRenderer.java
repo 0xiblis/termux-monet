@@ -77,6 +77,8 @@ public final class TerminalRenderer {
     private float animatedCursorX = 0f;
     private float animatedCursorY = 0f;
     private boolean cursorInitialized = false;
+    private boolean idleCursorParticles = true;
+    private long lastIdleParticleTime = 0;
 
     private static class CursorParticle {
         float x;
@@ -254,13 +256,9 @@ public final class TerminalRenderer {
         }
         // Reverse video here if _one and only one_ of the reverse flags are set:
         //final boolean reverseVideoHere = reverseVideo ^ (effect & (TextStyle.CHARACTER_ATTRIBUTE_INVERSE)) != 0;
-        boolean reverseVideoHere =
-            reverseVideo ^
-            (effect & (TextStyle.CHARACTER_ATTRIBUTE_INVERSE)) != 0;
+        boolean reverseVideoHere = reverseVideo ^ (effect & (TextStyle.CHARACTER_ATTRIBUTE_INVERSE)) != 0;
         // Disable classic block cursor inversion
-        if (cursor != 0 &&
-            cursorStyle ==
-            TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK) {
+        if (cursor != 0 && cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_BLOCK) {
             reverseVideoHere = false;
         }
         if (reverseVideoHere) {
@@ -296,109 +294,80 @@ public final class TerminalRenderer {
             canvas.drawRect(left, y - cursorHeight, right, y, mTextPaint);
         }*/
         if (cursor != 0) {
-            // ===== TARGET POSITION =====
             float targetX = left;
             float targetY = y;
-            // ===== INIT =====
             if (!cursorInitialized) {
                 animatedCursorX = targetX;
                 animatedCursorY = targetY;
                 cursorInitialized = true;
             }
             // ===== RGB COLOR =====
-            float hue =
-                (System.currentTimeMillis() % 4000L)
-                    / 4000f * 360f;
+            float hue = (System.currentTimeMillis() % 4000L) / 4000f * 360f;
             int rgbColor = Color.HSVToColor(
-                new float[]{
-                    hue,
-                    1f,
-                    1f
-                }
+                new float[]{hue, 1f, 1f}
             );
             // ===== SMOOTH MOVEMENT =====
             float smoothness = 0.18f;
-            animatedCursorX +=
-                (targetX - animatedCursorX) * smoothness;
-            animatedCursorY +=
-                (targetY - animatedCursorY) * smoothness;
+            animatedCursorX += (targetX - animatedCursorX) * smoothness;
+            animatedCursorY += (targetY - animatedCursorY) * smoothness;
             // ===== PARTICLE SPAWN =====
-            if (Math.abs(targetX - animatedCursorX) > 1f ||
-                Math.abs(targetY - animatedCursorY) > 1f) {
-                for (int i = 0; i < 1; i++) {  // (int i = 0; i < 2; i++)
-                    CursorParticle p =
-                        new CursorParticle();
-                    p.x =
-                        animatedCursorX +
-                        random.nextFloat() * 20f;
-                    p.y =
-                        animatedCursorY -
-                        random.nextFloat() * 20f;
-                    p.vx =
-                        (random.nextFloat() - 0.5f)
-                        * 2f;
-                    p.vy =
-                        -random.nextFloat() * 2f;
-                    p.size =
-                        1f + random.nextFloat() * 3f;  // 2f + random.nextFloat() * 5f;
-                    p.alpha = 255f;
-                    p.color = rgbColor;
-                    particles.add(p);
-                }
+            long now = System.currentTimeMillis();
+            boolean cursorMoving = Math.abs(targetX - animatedCursorX) > 1f || Math.abs(targetY - animatedCursorY) > 1f;
+            if (cursorMoving) {
+                CursorParticle p = new CursorParticle();
+                p.x = animatedCursorX + random.nextFloat() * 20f;
+                p.y = animatedCursorY - random.nextFloat() * 20f;
+                p.vx = (random.nextFloat() - 0.5f) * 2f;
+                p.vy = -random.nextFloat() * 2f;
+                p.size = 1f + random.nextFloat() * 3f;
+                p.alpha = 255f;
+                p.color = rgbColor;
+                particles.add(p);
+            } else if (idleCursorParticles && now - lastIdleParticleTime > 80L) {
+                CursorParticle p = new CursorParticle();
+                p.x = animatedCursorX + random.nextFloat() * (right - left);
+                p.y = animatedCursorY - random.nextFloat() * fontLineSpacing;
+                //p.vx = (random.nextFloat() - 0.5f) * 0.5f;
+                //p.vy = -0.5f - random.nextFloat() * 1.2f;
+                p.vx = (random.nextFloat() - 0.5f) * 0.25f;
+                p.vy = -0.2f - random.nextFloat() * 0.5f;
+                p.size = 1f + random.nextFloat() * 2f;
+                p.alpha = 180f;
+                p.color = rgbColor;
+                particles.add(p);
+                lastIdleParticleTime = now;
             }
             // ===== PAINT =====
             mTextPaint.setColor(rgbColor);
             // Glow
-            mTextPaint.setShadowLayer(
-                12f,
-                0f,
-                0f,
-                rgbColor
-            );
+            mTextPaint.setShadowLayer(12f, 0f, 0f, rgbColor);
             // ===== CURSOR DIMENSIONS =====
             float cursorLeft = animatedCursorX;
             float cursorRight = animatedCursorX + (right - left);
             float cursorHeight = fontLineSpacing;
             // ===== ORIGINAL CURSOR STYLE LOGIC =====
-            if (cursorStyle ==
-                TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
+            if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_UNDERLINE) {
                 cursorHeight /= 4f;
-            } else if (cursorStyle ==
-                TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
-                cursorRight -=
-                    ((cursorRight - cursorLeft) * 3f) / 4f;
+            } else if (cursorStyle == TerminalEmulator.TERMINAL_CURSOR_STYLE_BAR) {
+                cursorRight -= ((cursorRight - cursorLeft) * 3f) / 4f;
             }
             // ===== ROUNDNESS =====
             float radius = 7f;
             // ===== PARTICLES =====
-            Iterator<CursorParticle> iterator =
-                particles.iterator();
+            Iterator<CursorParticle> iterator = particles.iterator();
             while (iterator.hasNext()) {
                 CursorParticle p = iterator.next();
-                // update
                 p.x += p.vx;
                 p.y += p.vy;
-                p.alpha *= 0.92f;
-                // remove dead particles
+                p.alpha *= 0.94f;  // 92 | 94 | 96
                 if (p.alpha < 5f) {
                     iterator.remove();
                     continue;
                 }
-                // draw
                 mTextPaint.setColor(p.color);
                 mTextPaint.setAlpha((int)p.alpha);
-                mTextPaint.setShadowLayer(
-                    10f,
-                    0f,
-                    0f,
-                    p.color
-                );
-                canvas.drawCircle(
-                    p.x,
-                    p.y,
-                    p.size,
-                    mTextPaint
-                );
+                mTextPaint.setShadowLayer(10f, 0f, 0f, p.color);
+                canvas.drawCircle(p.x, p.y, p.size, mTextPaint);
             }
             // ===== DRAW =====
             mTextPaint.setAlpha(255);
@@ -414,7 +383,6 @@ public final class TerminalRenderer {
             // ===== CLEANUP =====
             mTextPaint.clearShadowLayer();
         }
-
 
         if ((effect & TextStyle.CHARACTER_ATTRIBUTE_INVISIBLE) == 0) {
             if (dim) {
