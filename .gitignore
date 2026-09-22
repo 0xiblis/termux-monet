@@ -7,6 +7,8 @@ build/
 release/
 *.apk
 *.so
+!app/src/main/jniLibs/
+!app/src/main/jniLibs/**/*.so
 .externalNativeBuild
 .cxx
 *.zip
