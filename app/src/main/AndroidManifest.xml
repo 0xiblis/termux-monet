@@ -56,6 +56,7 @@
         android:debuggable="true"
         android:supportsRtl="false"
         android:theme="@style/Theme.TermuxApp.DayNight.DarkActionBar"
+        android:extractNativeLibs="true"
         tools:targetApi="o">
 
         <activity
